@@ -1,25 +1,21 @@
 {
-  "name": "mcp",
+  "name": "custom-crm-mcp",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "axios": "^1.16.0",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@ringcentral/sdk": "^5.0.11",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "zod": "^3.25.28"
   },
   "devDependencies": {
+    "@types/node": "^22.15.17",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.8.3"
   }
 }
