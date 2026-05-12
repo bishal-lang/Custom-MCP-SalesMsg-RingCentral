@@ -10,7 +10,8 @@ export const generateRingoutTool: MCPTool = {
       from: { type: "string" },
       to: { type: "string" }
     },
-    required: ["from", "to"]
+    required: ["from", "to"],
+    additionalProperties: false
   },
   handler: async (args: any) => {
     const { from, to } = args;

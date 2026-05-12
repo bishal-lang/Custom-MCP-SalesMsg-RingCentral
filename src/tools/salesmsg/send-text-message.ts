@@ -10,7 +10,8 @@ export const sendTextMessageTool: MCPTool = {
       phone: { type: "string" },
       message: { type: "string" }
     },
-    required: ["phone", "message"]
+    required: ["phone", "message"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return sendTextMessage(args.phone, args.message);

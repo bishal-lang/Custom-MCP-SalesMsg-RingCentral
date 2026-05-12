@@ -10,7 +10,8 @@ export const removeTagTool: MCPTool = {
       contactId: { type: "string" },
       tag: { type: "string" }
     },
-    required: ["contactId", "tag"]
+    required: ["contactId", "tag"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return removeTag(args.contactId, args.tag);

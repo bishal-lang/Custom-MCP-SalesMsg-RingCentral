@@ -9,7 +9,8 @@ export const salesmsgPhoneLookupTool: MCPTool = {
     properties: {
       phone: { type: "string" }
     },
-    required: ["phone"]
+    required: ["phone"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return phoneLookup(args.phone);

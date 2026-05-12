@@ -1,5 +1,3 @@
-
-
 export type RingCentralSendSmsInput = {
   phone: string;
   message: string;

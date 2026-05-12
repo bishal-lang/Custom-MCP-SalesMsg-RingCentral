@@ -1,5 +1,3 @@
-// src/schemas/ringcentral.ts
-
 export const ringcentralSendSmsSchema = {
   type: "object",
   properties: {

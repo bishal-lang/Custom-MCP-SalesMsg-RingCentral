@@ -1,5 +1,3 @@
-// src/schemas/salesmsg.ts
-
 export const salesmsgSendTextMessageSchema = {
   type: "object",
   properties: {

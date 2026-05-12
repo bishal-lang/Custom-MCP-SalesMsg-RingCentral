@@ -9,7 +9,8 @@ export const findContactTool: MCPTool = {
     properties: {
       query: { type: "string" }
     },
-    required: ["query"]
+    required: ["query"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return findContact(args.query);

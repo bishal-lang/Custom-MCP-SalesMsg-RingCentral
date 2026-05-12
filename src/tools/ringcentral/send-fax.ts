@@ -10,7 +10,8 @@ export const sendFaxTool: MCPTool = {
       to: { type: "string" },
       fileUrl: { type: "string" }
     },
-    required: ["to", "fileUrl"]
+    required: ["to", "fileUrl"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return sendFax(args.to, args.fileUrl);

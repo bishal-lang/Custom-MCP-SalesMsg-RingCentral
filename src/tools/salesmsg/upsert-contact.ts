@@ -10,7 +10,8 @@ export const upsertContactTool: MCPTool = {
       phone: { type: "string" },
       data: { type: "object" }
     },
-    required: ["phone"]
+    required: ["phone"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return upsertContact(args.phone, args.data || {});

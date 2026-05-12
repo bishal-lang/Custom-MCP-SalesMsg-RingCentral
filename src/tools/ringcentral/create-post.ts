@@ -9,7 +9,8 @@ export const createPostTool: MCPTool = {
     properties: {
       text: { type: "string" }
     },
-    required: ["text"]
+    required: ["text"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return createPost(args.text);

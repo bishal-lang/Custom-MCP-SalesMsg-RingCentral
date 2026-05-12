@@ -9,7 +9,8 @@ export const createVideoMeetingTool: MCPTool = {
     properties: {
       topic: { type: "string" }
     },
-    required: ["topic"]
+    required: ["topic"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return createVideoMeeting(args.topic);

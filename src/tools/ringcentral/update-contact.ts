@@ -10,7 +10,8 @@ export const updateContactTool: MCPTool = {
       contactId: { type: "string" },
       payload: { type: "object" }
     },
-    required: ["contactId", "payload"]
+    required: ["contactId", "payload"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return updateContact(args.contactId, args.payload);

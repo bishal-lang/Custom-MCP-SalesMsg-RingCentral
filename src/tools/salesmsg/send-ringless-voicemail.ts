@@ -10,7 +10,8 @@ export const sendRinglessVoicemailTool: MCPTool = {
       phone: { type: "string" },
       audioUrl: { type: "string" }
     },
-    required: ["phone", "audioUrl"]
+    required: ["phone", "audioUrl"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return sendRinglessVoicemail(args.phone, args.audioUrl);

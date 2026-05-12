@@ -7,7 +7,8 @@ export const findMemberTool: MCPTool = {
     type: "object",
     properties: {
       query: { type: "string" }
-    }
+    },
+    additionalProperties: false
   },
   handler: async () => {
     return { message: "Not implemented in API wrapper yet" };

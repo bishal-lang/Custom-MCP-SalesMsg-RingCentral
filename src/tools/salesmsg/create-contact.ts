@@ -11,7 +11,8 @@ export const createContactTool: MCPTool = {
       lastName: { type: "string" },
       phone: { type: "string" }
     },
-    required: ["firstName", "lastName", "phone"]
+    required: ["firstName", "lastName", "phone"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return createContact(args.firstName, args.lastName, args.phone);

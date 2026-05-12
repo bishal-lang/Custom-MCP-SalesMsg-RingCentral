@@ -10,7 +10,8 @@ export const createNoteTool: MCPTool = {
       contactId: { type: "string" },
       note: { type: "string" }
     },
-    required: ["contactId", "note"]
+    required: ["contactId", "note"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return createNote(args.contactId, args.note);

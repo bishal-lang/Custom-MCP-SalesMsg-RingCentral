@@ -11,7 +11,8 @@ export const apiRequestTool: MCPTool = {
       endpoint: { type: "string" },
       data: { type: "object" }
     },
-    required: ["method", "endpoint"]
+    required: ["method", "endpoint"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return apiRequest(args.method, args.endpoint, args.data);

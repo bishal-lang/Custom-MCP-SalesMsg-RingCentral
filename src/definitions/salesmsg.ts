@@ -1,5 +1,3 @@
-
-
 export type SalesmsgSendTextInput = {
   phone: string;
   message: string;

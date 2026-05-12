@@ -10,7 +10,8 @@ export const sendGroupTool: MCPTool = {
       phones: { type: "array", items: { type: "string" } },
       message: { type: "string" }
     },
-    required: ["phones", "message"]
+    required: ["phones", "message"],
+    additionalProperties: false
   },
   handler: async (args) => {
     return sendGroupText(args.phones, args.message);

@@ -44,16 +44,12 @@ async function rcRequest<T>(
   } catch (err: any) {
     const status = err?.response?.status;
 
-    const isAuthError =
-      status === 401 || status === 403;
+    const isAuthError = status === 401 || status === 403;
 
-    /**
-     * 🔁 AUTO-REFRESH FLOW
-     */
     if (isAuthError && retry) {
-      await init(true); // force re-login
+      await init(true); 
 
-      return rcRequest(fn, false); // retry once
+      return rcRequest(fn, false); 
     }
 
     const message =
