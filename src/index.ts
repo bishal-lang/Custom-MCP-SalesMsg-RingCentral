@@ -1,35 +1,30 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-
-import { StdioServerTransport }
-  from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema
 } from "@modelcontextprotocol/sdk/types.js";
 
-import {
-  createTextResponse
-} from "./utils/response.js";
+import { allTools } from "./tools/index.js";
+import { createTextResponse } from "./utils/response.js";
 
-import {
-  ringcentralCallLogsTool,
-  ringcentralCreateContactTool,
-  ringcentralSendSmsTool
-} from "./tools/ringcentral.js";
+/* ---------------- Tool Map ---------------- */
 
-import {
-  salesmsgCreateContactTool,
-  salesmsgListMessagesTool,
-  salesmsgSendSmsTool
-} from "./tools/salesmsg.js";
+const toolMap = new Map(
+  allTools.map((t) => [
+    t.definition.name,
+    t.handler
+  ])
+);
+
+/* ---------------- MCP Server ---------------- */
 
 const server = new Server(
   {
     name: "custom-crm-server",
     version: "1.0.0"
   },
-
   {
     capabilities: {
       tools: {}
@@ -37,303 +32,54 @@ const server = new Server(
   }
 );
 
-process.on(
-  "unhandledRejection",
-  console.error
-);
-
-process.on(
-  "uncaughtException",
-  console.error
-);
+/* ---------------- List Tools ---------------- */
 
 server.setRequestHandler(
   ListToolsRequestSchema,
-
-  async () => {
-    return {
-      tools: [
-        {
-          name: "salesmsg_send_sms",
-
-          description:
-            "Send SMS using Salesmsg",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {
-              phone: {
-                type: "string"
-              },
-
-              message: {
-                type: "string"
-              }
-            },
-
-            required: [
-              "phone",
-              "message"
-            ]
-          }
-        },
-
-        {
-          name:
-            "salesmsg_create_contact",
-
-          description:
-            "Create Salesmsg contact",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {
-              firstName: {
-                type: "string"
-              },
-
-              lastName: {
-                type: "string"
-              },
-
-              phone: {
-                type: "string"
-              }
-            },
-
-            required: [
-              "firstName",
-              "lastName",
-              "phone"
-            ]
-          }
-        },
-
-        {
-          name:
-            "salesmsg_list_messages",
-
-          description:
-            "List Salesmsg messages",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {}
-          }
-        },
-
-        {
-          name:
-            "ringcentral_send_sms",
-
-          description:
-            "Send SMS using RingCentral",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {
-              phone: {
-                type: "string"
-              },
-
-              message: {
-                type: "string"
-              }
-            },
-
-            required: [
-              "phone",
-              "message"
-            ]
-          }
-        },
-
-        {
-          name:
-            "ringcentral_call_logs",
-
-          description:
-            "Get RingCentral call logs",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {}
-          }
-        },
-
-        {
-          name:
-            "ringcentral_create_contact",
-
-          description:
-            "Create RingCentral contact",
-
-          inputSchema: {
-            type: "object",
-
-            properties: {
-              firstName: {
-                type: "string"
-              },
-
-              lastName: {
-                type: "string"
-              },
-
-              phone: {
-                type: "string"
-              }
-            },
-
-            required: [
-              "firstName",
-              "lastName",
-              "phone"
-            ]
-          }
-        }
-      ]
-    };
-  }
+  async () => ({
+    tools: allTools.map(
+      (t) => t.definition
+    )
+  })
 );
+
+/* ---------------- Call Tool ---------------- */
 
 server.setRequestHandler(
   CallToolRequestSchema,
-
   async (request) => {
-    const toolName = request.params.name;
+    try {
+      const handler = toolMap.get(
+        request.params.name
+      );
 
-    const args = request.params.arguments || {};
-
-    switch (toolName) {
-      case "salesmsg_send_sms": {
-        try {
-          const result =
-          await salesmsgSendSmsTool({
-          phone: String(args.phone),
-          message: String(args.message)
-          });
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-
-          return createTextResponse({
-            error: error instanceof Error ? error.message : "Unknown error"
-          });
-        }
-      }
-
-      case "salesmsg_create_contact": {
-        try{
-          const result =
-          await salesmsgCreateContactTool({
-          firstName: String(
-            args.firstName
-          ),
-
-          lastName: String(
-            args.lastName
-          ),
-
-          phone: String(args.phone)
-          });
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-          return createTextResponse({
-            error: error instanceof Error ? error.message : "Unknown Error"
-          });
-        }
-       
-      }
-
-      case "salesmsg_list_messages": {
-        try{
-          const result =
-          await salesmsgListMessagesTool();
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-          return createTextResponse({
-            error: error instanceof Error ? error.message : "Unknown Error"
-          });
-        }
-      
-      }
-
-      case "ringcentral_send_sms": {
-         try{
-          const result =
-          await ringcentralSendSmsTool({
-            phone: String(args.phone),
-            message: String(args.message)
-          });
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-          return createTextResponse({
-            error: error instanceof Error ? error.message : "Unknown Error"
-          });
-        }
-      
-      }
-
-      case "ringcentral_call_logs": {
-         try{
-          const result =
-          await ringcentralCallLogsTool();
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-          return createTextResponse({
-            error: error instanceof Error ? error.message : "Unknown Error"
-          });
-        }
-     
-      }
-
-      case "ringcentral_create_contact": {
-         try{
-          const result =
-          await ringcentralCreateContactTool({
-            firstName: String(
-              args.firstName
-            ),
-
-            lastName: String(
-              args.lastName
-            ),
-
-            phone: String(args.phone)
-          });
-
-        return createTextResponse(result);
-        }catch(error){
-          console.error(error);
-          return createTextResponse({
-           error: error instanceof Error ? error.message : "Unknown Error"
-          });
-        }
-       
-      }
-
-      default:
+      if (!handler) {
         throw new Error(
-          `Unknown tool: ${toolName}`
+          `Unknown tool: ${request.params.name}`
         );
+      }
+
+      const result = await handler(
+        request.params.arguments || {}
+      );
+
+      return createTextResponse(result);
+
+    } catch (err) {
+      console.error(err);
+
+      return createTextResponse({
+        success: false,
+        error:
+          err instanceof Error
+            ? err.message
+            : "Unknown error"
+      });
     }
   }
 );
+
+/* ---------------- Start Server ---------------- */
 
 const transport =
   new StdioServerTransport();

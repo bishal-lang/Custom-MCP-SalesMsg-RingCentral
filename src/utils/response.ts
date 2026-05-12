@@ -1,13 +1,34 @@
-import type { ToolResponse } from "../types/tool.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
-export function createTextResponse(
-  data: unknown
-): ToolResponse {
+/**
+ * Standard MCP text response
+ */
+export function createTextResponse(data: unknown): CallToolResult {
   return {
     content: [
       {
         type: "text",
-        text: JSON.stringify(data, null, 2)
+        text:
+          typeof data === "string"
+            ? data
+            : JSON.stringify(data, null, 2)
+      }
+    ]
+  };
+}
+
+/**
+ * Error response (safe for MCP Inspector)
+ */
+export function createErrorResponse(error: unknown): CallToolResult {
+  return {
+    content: [
+      {
+        type: "text",
+        text:
+          error instanceof Error
+            ? `${error.name}: ${error.message}`
+            : String(error)
       }
     ]
   };

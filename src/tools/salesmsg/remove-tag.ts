@@ -1,0 +1,18 @@
+import type { MCPTool } from "../../types/mcp.js";
+import { removeTag } from "../../services/salesmsg.services.js";
+
+export const removeTagTool: MCPTool = {
+  name: "salesmsg_remove_tag",
+  description: "Remove tag from contact",
+  inputSchema: {
+    type: "object",
+    properties: {
+      contactId: { type: "string" },
+      tag: { type: "string" }
+    },
+    required: ["contactId", "tag"]
+  },
+  handler: async (args) => {
+    return removeTag(args.contactId, args.tag);
+  }
+};
