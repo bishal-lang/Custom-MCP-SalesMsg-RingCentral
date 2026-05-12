@@ -1,3 +1,4 @@
+//ringcentral-client.ts
 import RingCentral from "@ringcentral/sdk";
 import { config } from "../config.js";
 
@@ -28,27 +29,36 @@ export async function sendRingCentralSMS(
   phone: string,
   message: string
 ) {
-  await initializeRingCentral();
+  try {
+    await initializeRingCentral();
 
-  const response = await platform.post(
-    "/restapi/v1.0/account/~/extension/~/sms",
-    {
-      from: {
-        phoneNumber:
-          config.ringcentral.fromNumber
-      },
+    const response = await platform.post(
+      "/restapi/v1.0/account/~/extension/~/sms",
+      {
+        from: {
+          phoneNumber:
+            config.ringcentral.fromNumber
+        },
 
-      to: [
-        {
-          phoneNumber: phone
-        }
-      ],
+        to: [
+          {
+            phoneNumber: phone
+          }
+        ],
 
-      text: message
-    }
-  );
+        text: message
+      }
+    );
 
-  return await response.json();
+    return await response.json();
+  } catch (error: any) {
+    console.error(
+      "RingCentral SMS Error:",
+      error.message
+    );
+
+    throw error;
+  }
 }
 
 export async function getRingCentralCallLogs() {

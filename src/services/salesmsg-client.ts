@@ -1,3 +1,4 @@
+//salesmsg-client.ts
 import axios from "axios";
 import { config } from "../config.js";
 
@@ -16,7 +17,7 @@ export async function sendSalesmsgSMS(
   message: string
 ) {
   const response =
-    await salesmsgClient.post("/messages", {
+    await salesmsgClient.post("/message", {
       phoneNumber: phone,
       message
     });
@@ -41,7 +42,7 @@ export async function createSalesmsgContact(
 
 export async function listSalesmsgMessages() {
   const response =
-    await salesmsgClient.get("/messages");
+    await salesmsgClient.get("/message");
 
   return response.data;
 }

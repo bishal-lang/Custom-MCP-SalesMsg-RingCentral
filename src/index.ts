@@ -37,6 +37,16 @@ const server = new Server(
   }
 );
 
+process.on(
+  "unhandledRejection",
+  console.error
+);
+
+process.on(
+  "uncaughtException",
+  console.error
+);
+
 server.setRequestHandler(
   ListToolsRequestSchema,
 
@@ -196,66 +206,105 @@ server.setRequestHandler(
   CallToolRequestSchema,
 
   async (request) => {
-    const toolName =
-      request.params.name;
+    const toolName = request.params.name;
 
-    const args =
-      request.params.arguments || {};
+    const args = request.params.arguments || {};
 
     switch (toolName) {
       case "salesmsg_send_sms": {
-        const result =
+        try {
+          const result =
           await salesmsgSendSmsTool({
-            phone: String(args.phone),
-            message: String(args.message)
+          phone: String(args.phone),
+          message: String(args.message)
           });
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+
+          return createTextResponse({
+            error: error instanceof Error ? error.message : "Unknown error"
+          });
+        }
       }
 
       case "salesmsg_create_contact": {
-        const result =
+        try{
+          const result =
           await salesmsgCreateContactTool({
-            firstName: String(
-              args.firstName
-            ),
+          firstName: String(
+            args.firstName
+          ),
 
-            lastName: String(
-              args.lastName
-            ),
+          lastName: String(
+            args.lastName
+          ),
 
-            phone: String(args.phone)
+          phone: String(args.phone)
           });
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+          return createTextResponse({
+            error: error instanceof Error ? error.message : "Unknown Error"
+          });
+        }
+       
       }
 
       case "salesmsg_list_messages": {
-        const result =
+        try{
+          const result =
           await salesmsgListMessagesTool();
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+          return createTextResponse({
+            error: error instanceof Error ? error.message : "Unknown Error"
+          });
+        }
+      
       }
 
       case "ringcentral_send_sms": {
-        const result =
+         try{
+          const result =
           await ringcentralSendSmsTool({
             phone: String(args.phone),
             message: String(args.message)
           });
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+          return createTextResponse({
+            error: error instanceof Error ? error.message : "Unknown Error"
+          });
+        }
+      
       }
 
       case "ringcentral_call_logs": {
-        const result =
+         try{
+          const result =
           await ringcentralCallLogsTool();
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+          return createTextResponse({
+            error: error instanceof Error ? error.message : "Unknown Error"
+          });
+        }
+     
       }
 
       case "ringcentral_create_contact": {
-        const result =
+         try{
+          const result =
           await ringcentralCreateContactTool({
             firstName: String(
               args.firstName
@@ -269,6 +318,13 @@ server.setRequestHandler(
           });
 
         return createTextResponse(result);
+        }catch(error){
+          console.error(error);
+          return createTextResponse({
+           error: error instanceof Error ? error.message : "Unknown Error"
+          });
+        }
+       
       }
 
       default:
