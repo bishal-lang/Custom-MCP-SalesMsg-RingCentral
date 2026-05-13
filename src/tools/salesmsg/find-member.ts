@@ -1,24 +1,28 @@
 import { findMember } from "../../services/salesmsg.services.js";
 import type { MCPTool } from "../../types/mcp.js";
 
-export const findMemberTool: MCPTool = {
+export const salesmsgFindMemberTool: MCPTool = {
   name: "salesmsg_find_member",
-  description: "Find member (placeholder - depends on Salesmsg plan)",
+  description: "Find team member",
   inputSchema: {
     type: "object",
     properties: {
-      name: {type: "string"},
-      email: {type: "string"},
-      phone: {type: "string"}
+      teamId: { type: "string" },
+      term: { type: "string" },
+      assigned: { type: "number" },
+      limit: { type: "number" },
+      offset: { type: "number" }
     },
-    additionalProperties: false,
-    anyOf: [
-    { required: ["name"] },
-    { required: ["email"] },
-    { required: ["phone"] }
-  ]
+    required: ["teamId", "term"],
+    additionalProperties: false
   },
-  handler: async (args: any) => {
-    return await findMember(args);
+  handler: async (args) => {
+    return findMember({
+      teamId: args.teamId,
+      term: args.term,
+      assigned: args.assigned,
+      limit: args.limit,
+      offset: args.offset
+    });
   }
 };

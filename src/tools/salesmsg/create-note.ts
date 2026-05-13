@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { createNote } from "../../services/salesmsg.services.js";
 
-export const createNoteTool: MCPTool = {
+export const salesmsgCreateNoteTool: MCPTool = {
   name: "salesmsg_create_note",
-  description: "Create note for contact",
+  description: "Create note",
   inputSchema: {
     type: "object",
     properties: {

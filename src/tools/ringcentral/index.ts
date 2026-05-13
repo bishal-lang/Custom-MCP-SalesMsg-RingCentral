@@ -1,23 +1,25 @@
-import { sendSmsMmsTool } from "./send-sms.js";
-import { createContactTool } from "./create-contact.js";
-import { updateContactTool } from "./update-contact.js";
-import { findContactTool } from "./find-contact.js";
-import { createPostTool } from "./create-post.js";
-import { createVideoMeetingTool } from "./create-video-meeting.js";
-import { sendFaxTool } from "./send-fax.js";
+import { ringcentralSendSmsTool } from "./send-sms.js";
+import { ringcentralCreateContactTool } from "./create-contact.js";
+import { ringcentralUpdateContactTool } from "./update-contact.js";
+import { ringcentralFindContactTool } from "./find-contact.js";
+import { ringcentralCreatePostTool } from "./create-post.js";
+import { ringcentralCreateVideoMeetingTool } from "./create-video-meeting.js";
+import { ringcentralSendFaxTool } from "./send-fax.js";
 import { apiRequestTool } from "./api-request.js";
 import { MCPTool } from "../../types/mcp.js";
-import { generateRingoutTool } from "./generate-ringout.js";
+import { ringcentralRingoutTool } from "./generate-ringout.js";
+import { ringcentralGetContactTool } from "./get-contact.js"
 
 
 export const ringcentralTools: MCPTool[] = [
-  sendSmsMmsTool,
-  createContactTool,
-  updateContactTool,
-  findContactTool,
-  createPostTool,
-  createVideoMeetingTool,
-  sendFaxTool,
+  ringcentralSendSmsTool,
+  ringcentralCreateContactTool,
+  ringcentralUpdateContactTool,
+  ringcentralFindContactTool,
+  ringcentralCreatePostTool,
+  ringcentralCreateVideoMeetingTool,
+  ringcentralSendFaxTool,
   // apiRequestTool,
-  generateRingoutTool
+  ringcentralRingoutTool,
+  ringcentralGetContactTool
 ];

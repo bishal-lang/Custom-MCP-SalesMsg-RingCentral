@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { optOutContact } from "../../services/salesmsg.services.js";
 
-export const salesmsgOptOutContactTool: MCPTool = {
-  name: "salesmsg_opt_out_contact",
-  description: "Opt out a contact from messaging",
+export const salesmsgOptOutTool: MCPTool = {
+  name: "salesmsg_opt_out",
+  description: "Opt out contact",
   inputSchema: {
     type: "object",
     properties: {

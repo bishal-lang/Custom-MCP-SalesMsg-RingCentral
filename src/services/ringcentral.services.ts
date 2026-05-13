@@ -9,7 +9,7 @@ async function request<T>(fn: () => Promise<T>, retry = true): Promise<T> {
     const authError = status === 401 || status === 403;
 
     if (authError && retry) {
-      await getRingcentralClient(); // re-init session
+      await getRingcentralClient();
       return request(fn, false);
     }
 
@@ -84,6 +84,9 @@ export async function getContactById(contactId: string) {
   });
 }
 
+/**
+ * FIXED: proper query string handling
+ */
 export async function findContact(query: string) {
   return request(async () => {
     const platform = await getRingcentralClient();
@@ -136,7 +139,7 @@ export async function sendFax(to: string, fileUrl: string) {
   });
 }
 
-/* ---------------- TEAM MESSAGING ---------------- */
+/* ---------------- CHAT POSTS (NEW API) ---------------- */
 
 export async function createPost(chatId: string, text: string) {
   return request(async () => {
@@ -144,16 +147,14 @@ export async function createPost(chatId: string, text: string) {
 
     const res = await platform.post(
       `/team-messaging/v1/chats/${chatId}/posts`,
-      {
-        text
-      }
+      { text }
     );
 
     return res.json();
   });
 }
 
-/* ---------------- VIDEO ---------------- */
+/* ---------------- VIDEO (NEW API) ---------------- */
 
 export async function createVideoMeeting(accountId: string, extensionId: string, topic: string) {
   return request(async () => {
@@ -161,9 +162,7 @@ export async function createVideoMeeting(accountId: string, extensionId: string,
 
     const res = await platform.post(
       `/rcvideo/v2/account/${accountId}/extension/${extensionId}/bridges`,
-      {
-        topic
-      }
+      { topic }
     );
 
     return res.json();
@@ -177,7 +176,6 @@ export async function apiRequest(method: string, endpoint: string, body?: any) {
     const platform = await getRingcentralClient();
 
     const fn = (platform as any)[method.toLowerCase()].bind(platform);
-
     const res = await fn(endpoint, body);
 
     return res.json();

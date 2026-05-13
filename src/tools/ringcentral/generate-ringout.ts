@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { generateRingout } from "../../services/ringcentral.services.js";
 
-export const generateRingoutTool: MCPTool = {
+export const ringcentralRingoutTool: MCPTool = {
   name: "ringcentral_generate_ringout",
-  description: "Initiate a RingCentral ringout call",
+  description: "Initiate ringout call",
   inputSchema: {
     type: "object",
     properties: {
@@ -13,8 +13,7 @@ export const generateRingoutTool: MCPTool = {
     required: ["from", "to"],
     additionalProperties: false
   },
-  handler: async (args: any) => {
-    const { from, to } = args;
-    return await generateRingout(from, to);
+  handler: async (args) => {
+    return generateRingout(args.from, args.to);
   }
 };

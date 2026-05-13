@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { createContact } from "../../services/ringcentral.services.js";
 
-export const createContactTool: MCPTool = {
+export const ringcentralCreateContactTool: MCPTool = {
   name: "ringcentral_create_contact",
-  description: "Create a RingCentral contact",
+  description: "Create RingCentral contact",
   inputSchema: {
     type: "object",
     properties: {

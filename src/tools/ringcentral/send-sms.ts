@@ -1,7 +1,7 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { sendSmsMms } from "../../services/ringcentral.services.js";
 
-export const sendSmsMmsTool: MCPTool = {
+export const ringcentralSendSmsTool: MCPTool = {
   name: "ringcentral_send_sms_mms",
   description: "Send SMS/MMS via RingCentral",
   inputSchema: {

@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { removeTag } from "../../services/salesmsg.services.js";
 
-export const removeTagTool: MCPTool = {
+export const salesmsgRemoveTagTool: MCPTool = {
   name: "salesmsg_remove_tag",
-  description: "Remove tag from contact",
+  description: "Remove tag",
   inputSchema: {
     type: "object",
     properties: {

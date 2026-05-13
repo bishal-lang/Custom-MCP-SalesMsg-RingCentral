@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { sendFax } from "../../services/ringcentral.services.js";
 
-export const sendFaxTool: MCPTool = {
+export const ringcentralSendFaxTool: MCPTool = {
   name: "ringcentral_send_fax",
-  description: "Send fax via RingCentral",
+  description: "Send fax",
   inputSchema: {
     type: "object",
     properties: {

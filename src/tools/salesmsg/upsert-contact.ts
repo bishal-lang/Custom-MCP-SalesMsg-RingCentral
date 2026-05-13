@@ -1,9 +1,9 @@
 // import type { MCPTool } from "../../types/mcp.js";
 // import { upsertContact } from "../../services/salesmsg.services.js";
 
-// export const upsertContactTool: MCPTool = {
+// export const salesmsgUpsertContactTool: MCPTool = {
 //   name: "salesmsg_upsert_contact",
-//   description: "Create or update contact",
+//   description: "Upsert contact",
 //   inputSchema: {
 //     type: "object",
 //     properties: {

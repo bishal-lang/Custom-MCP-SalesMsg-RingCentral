@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { addTag } from "../../services/salesmsg.services.js";
 
-export const addTagTool: MCPTool = {
+export const salesmsgAddTagTool: MCPTool = {
   name: "salesmsg_add_tag",
-  description: "Add tag to contact",
+  description: "Add tag",
   inputSchema: {
     type: "object",
     properties: {

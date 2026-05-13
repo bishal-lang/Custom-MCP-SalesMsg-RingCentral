@@ -1,24 +1,18 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { findContact } from "../../services/ringcentral.services.js";
 
-export const findContactTool: MCPTool = {
+export const ringcentralFindContactTool: MCPTool = {
   name: "ringcentral_find_contact",
-  description: "Search RingCentral contacts",
+  description: "Search contacts by query",
   inputSchema: {
     type: "object",
     properties: {
-      name: {type: "string"},
-      email: {type: "string"},
-      phone: {type: "string"}
+      query: { type: "string" }
     },
-    additionalProperties: false,
-    anyOf: [
-    { required: ["name"] },
-    { required: ["email"] },
-    { required: ["phone"] }
-  ]
+    required: ["query"],
+    additionalProperties: false
   },
   handler: async (args) => {
-    return findContact(args.name);
+    return findContact(args.query);
   }
 };

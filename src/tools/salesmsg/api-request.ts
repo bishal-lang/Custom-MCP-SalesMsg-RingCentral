@@ -1,9 +1,9 @@
 import type { MCPTool } from "../../types/mcp.js";
 import { apiRequest } from "../../services/salesmsg.services.js";
 
-export const apiRequestTool: MCPTool = {
+export const salesmsgApiRequestTool: MCPTool = {
   name: "salesmsg_api_request",
-  description: "Generic Salesmsg API request",
+  description: "Generic API request",
   inputSchema: {
     type: "object",
     properties: {
