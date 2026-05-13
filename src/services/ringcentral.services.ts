@@ -1,172 +1,185 @@
-import RingCentral from "@ringcentral/sdk";
-import { config } from "../config.js";
+import { getRingcentralClient } from "../clients/ringcentral.client.js";
+import { config } from "../config/index.js";
 
-const rcsdk = new RingCentral.SDK({
-  clientId: config.ringcentral.clientId,
-  clientSecret: config.ringcentral.clientSecret,
-  server: config.ringcentral.server
-});
-
-const platform = rcsdk.platform();
-
-let initialized = false;
-let initPromise: Promise<void> | null = null;
-let lastAuthTime = 0;
-
-async function init(force = false) {
-  if (initialized && !force) return;
-
-  if (!initPromise || force) {
-    initPromise = (async () => {
-      if (!config.ringcentral.jwt) {
-        throw new Error("Missing RingCentral JWT");
-      }
-
-      await platform.login({
-        jwt: config.ringcentral.jwt
-      });
-
-      initialized = true;
-      lastAuthTime = Date.now();
-    })();
-  }
-
-  await initPromise;
-}
-
-async function rcRequest<T>(
-  fn: () => Promise<T>,
-  retry = true
-): Promise<T> {
+async function request<T>(fn: () => Promise<T>, retry = true): Promise<T> {
   try {
-    await init();
     return await fn();
   } catch (err: any) {
     const status = err?.response?.status;
+    const authError = status === 401 || status === 403;
 
-    const isAuthError = status === 401 || status === 403;
-
-    if (isAuthError && retry) {
-      await init(true); 
-
-      return rcRequest(fn, false); 
+    if (authError && retry) {
+      await getRingcentralClient(); // re-init session
+      return request(fn, false);
     }
 
-    const message =
-      err?.response?.data?.message ||
-      err?.message ||
-      "Unknown RingCentral error";
-
     throw new Error(
-      `RingCentral Error (${status ?? "no-status"}): ${message}`
+      `RingCentral Error (${status ?? "no-status"}): ${
+        err?.message || "unknown error"
+      }`
     );
   }
 }
 
-/* ---------------- SMS / MMS ---------------- */
+/* ---------------- SMS ---------------- */
 
 export async function sendSmsMms(phone: string, message: string) {
-  return rcRequest(() =>
-    platform.post(
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
       "/restapi/v1.0/account/~/extension/~/sms",
       {
         from: { phoneNumber: config.ringcentral.fromNumber },
         to: [{ phoneNumber: phone }],
         text: message
       }
-    ).then(r => r.json())
-  );
+    );
+
+    return res.json();
+  });
 }
 
-/* ---------------- Contacts ---------------- */
+/* ---------------- CONTACTS ---------------- */
 
-export async function createContact(
-  firstName: string,
-  lastName: string,
-  phone: string
-) {
-  return rcRequest(() =>
-    platform.post(
+export async function createContact(first: string, last: string, phone: string) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
       "/restapi/v1.0/account/~/extension/~/address-book/contact",
       {
-        firstName,
-        lastName,
+        firstName: first,
+        lastName: last,
         businessPhone: phone
       }
-    ).then(r => r.json())
-  );
+    );
+
+    return res.json();
+  });
 }
 
 export async function updateContact(contactId: string, payload: any) {
-  return rcRequest(() =>
-    platform
-      .put(
-        `/restapi/v1.0/account/~/extension/~/address-book/contact/${contactId}`,
-        payload
-      )
-      .then(r => r.json())
-  );
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.put(
+      `/restapi/v1.0/account/~/extension/~/address-book/contact/${contactId}`,
+      payload
+    );
+
+    return res.json();
+  });
+}
+
+export async function getContactById(contactId: string) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.get(
+      `/restapi/v1.0/account/~/extension/~/address-book/contact/${contactId}`
+    );
+
+    return res.json();
+  });
 }
 
 export async function findContact(query: string) {
-  return rcRequest(() =>
-    platform
-      .get(
-        `/restapi/v1.0/account/~/extension/~/address-book/contact?searchText=${encodeURIComponent(
-          query
-        )}`
-      )
-      .then(r => r.json())
-  );
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.get(
+      `/restapi/v1.0/account/~/extension/~/address-book/contact`,
+      {
+        searchText: query
+      }
+    );
+
+    return res.json();
+  });
 }
 
-/* ---------------- Other primitives ---------------- */
-
-export async function createPost(text: string) {
-  return rcRequest(() =>
-    platform.post("/restapi/v1.0/glip/posts", { text }).then(r => r.json())
-  );
-}
-
-export async function createVideoMeeting(topic: string) {
-  return rcRequest(() =>
-    platform.post("/restapi/v1.0/account/~/extension/~/meeting", {
-      topic
-    }).then(r => r.json())
-  );
-}
-
-export async function sendFax(to: string, fileUrl: string) {
-  return rcRequest(() =>
-    platform.post("/restapi/v1.0/account/~/extension/~/fax", {
-      to: [{ phoneNumber: to }],
-      attachments: [{ uri: fileUrl }]
-    }).then(r => r.json())
-  );
-}
-
-/* ---------------- Generic API ---------------- */
-
-export async function apiRequest(
-  method: string,
-  endpoint: string,
-  body?: any
-) {
-  return rcRequest(() =>
-    (platform as any)[method.toLowerCase()](endpoint, body).then((r: any) =>
-      r.json()
-    )
-  );
-}
+/* ---------------- RINGOUT ---------------- */
 
 export async function generateRingout(from: string, to: string) {
-  return rcRequest(() =>
-    platform
-      .post("/restapi/v1.0/account/~/extension/~/ring-out", {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
+      "/restapi/v1.0/account/~/extension/~/ring-out",
+      {
         from: { phoneNumber: from },
         to: { phoneNumber: to },
         playPrompt: false
-      })
-      .then(r => r.json())
-  );
+      }
+    );
+
+    return res.json();
+  });
+}
+
+/* ---------------- FAX ---------------- */
+
+export async function sendFax(to: string, fileUrl: string) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
+      "/restapi/v1.0/account/~/extension/~/fax",
+      {
+        to: [{ phoneNumber: to }],
+        attachments: [{ uri: fileUrl }]
+      }
+    );
+
+    return res.json();
+  });
+}
+
+/* ---------------- TEAM MESSAGING ---------------- */
+
+export async function createPost(chatId: string, text: string) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
+      `/team-messaging/v1/chats/${chatId}/posts`,
+      {
+        text
+      }
+    );
+
+    return res.json();
+  });
+}
+
+/* ---------------- VIDEO ---------------- */
+
+export async function createVideoMeeting(accountId: string, extensionId: string, topic: string) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const res = await platform.post(
+      `/rcvideo/v2/account/${accountId}/extension/${extensionId}/bridges`,
+      {
+        topic
+      }
+    );
+
+    return res.json();
+  });
+}
+
+/* ---------------- GENERIC ---------------- */
+
+export async function apiRequest(method: string, endpoint: string, body?: any) {
+  return request(async () => {
+    const platform = await getRingcentralClient();
+
+    const fn = (platform as any)[method.toLowerCase()].bind(platform);
+
+    const res = await fn(endpoint, body);
+
+    return res.json();
+  });
 }

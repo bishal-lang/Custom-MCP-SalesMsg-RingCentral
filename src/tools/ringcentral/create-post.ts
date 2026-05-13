@@ -13,6 +13,6 @@ export const createPostTool: MCPTool = {
     additionalProperties: false
   },
   handler: async (args) => {
-    return createPost(args.text);
+    return createPost(args.chatId, args.text);
   }
 };

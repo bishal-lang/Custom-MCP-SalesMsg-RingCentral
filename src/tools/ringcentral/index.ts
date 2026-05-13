@@ -18,6 +18,6 @@ export const ringcentralTools: MCPTool[] = [
   createPostTool,
   createVideoMeetingTool,
   sendFaxTool,
-  apiRequestTool,
+  // apiRequestTool,
   generateRingoutTool
 ];

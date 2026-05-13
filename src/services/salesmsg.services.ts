@@ -1,106 +1,88 @@
-import axios from "axios";
-import { config } from "../config.js";
+import { salesmsgClient } from "../clients/salesmsg.client.js";
 
-function assertConfig() {
-  if (!config.salesmsgApiKey) {
-    throw new Error("Missing SALESMSG API key in config");
-  }
-}
-
-assertConfig();
-
-export const salesmsgClient = axios.create({
-  baseURL: "https://api.salesmessage.com/pub/v2.2",
-  headers: {
-    Authorization: `Bearer ${config.salesmsgApiKey}`,
-    "Content-Type": "application/json"
-  }
-});
-
-async function smsRequest<T>(
-  fn: () => Promise<T>,
-  attempt = 1
-): Promise<T> {
+async function request<T>(fn: () => Promise<any>, attempt = 1): Promise<T> {
   try {
-    return await fn();
+    const res = await fn();
+    return res.data;
   } catch (err: any) {
     const status = err?.response?.status;
 
-    const isRetryable =
-      status === 429 ||
-      status >= 500 ||
-      !status;
+    const retryable = status === 429 || status >= 500 || !status;
 
-    /**
-     * Retry transient failures
-     */
-    if (isRetryable && attempt < 3) {
-      const delay =
-        300 * Math.pow(2, attempt);
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay)
-      );
-
-      return smsRequest(
-        fn,
-        attempt + 1
-      );
+    if (retryable && attempt < 3) {
+      await new Promise(r => setTimeout(r, 300 * attempt));
+      return request(fn, attempt + 1);
     }
 
-    const data = err?.response?.data;
-
-    const message =
-      data?.message ||
-      data?.error ||
-      err?.message ||
-      "Unknown Salesmsg error";
-
     throw new Error(
-      `Salesmsg Error (${status ?? "no-status"}): ${message}`
+      `Salesmsg Error (${status ?? "no-status"}): ${
+        err?.response?.data?.message || err.message
+      }`
     );
   }
 }
 
-/* ---------------- Messaging ---------------- */
+/* ---------------- MESSAGING ---------------- */
 
-export async function sendTextMessage(phone: string, message: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/messages", { phoneNumber: phone, message })
-      .then(r => r.data)
+export async function sendTextMessage(
+  phone: string,
+  message: string,
+  teamId?: number
+) {
+  return request(() =>
+    salesmsgClient.post("/messages", null, {
+      params: {
+        number: phone,
+        message,
+        team_id: teamId
+      }
+    })
   );
 }
 
-export async function sendGroupText(phones: string[], message: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/messages/group", {
-        phoneNumbers: phones,
-        message
-      })
-      .then(r => r.data)
+export async function sendGroupText(
+  phones: string[],
+  message: string,
+  teamId?: number
+) {
+  return request(() =>
+    Promise.all(
+      phones.map(phone =>
+        salesmsgClient.post("/messages", null, {
+          params: {
+            number: phone,
+            message,
+            team_id: teamId
+          }
+        })
+      )
+    )
   );
 }
 
-export async function sendRinglessVoicemail(phone: string, audioUrl: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/voicemail/ringless", {
-        phoneNumber: phone,
-        audioUrl
-      })
-      .then(r => r.data)
+/* ---------------- CONTACTS ---------------- */
+
+export async function findContacts(params: {
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}) {
+  return request(() =>
+    salesmsgClient.get("/contacts", {
+      params: {
+        number: params.phone,
+        first_name: params.firstName,
+        last_name: params.lastName,
+        email: params.email
+      }
+    })
   );
 }
 
-/* ---------------- Contacts ---------------- */
-
-export async function findContact(phone: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .get("/contacts/search", { params: { phone } })
-      .then(r => r.data)
+export async function getContact(contactId: string) {
+  return request(() =>
+    salesmsgClient.get(`/contacts/${contactId}`)
   );
 }
 
@@ -109,113 +91,126 @@ export async function createContact(
   lastName: string,
   phone: string
 ) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/contacts", {
-        firstName,
-        lastName,
-        phoneNumber: phone
-      })
-      .then(r => r.data)
+  return request(() =>
+    salesmsgClient.get("/contacts", {
+      params: {
+        first_name: firstName,
+        last_name: lastName,
+        number: phone
+      }
+    })
   );
 }
 
-export async function upsertContact(
-  phone: string,
-  data: Record<string, unknown>
+/* ---------------- NOTES ---------------- */
+
+export async function createNote(
+  contactId: string,
+  text: string
 ) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/contacts/upsert", {
-        phoneNumber: phone,
-        ...data
-      })
-      .then(r => r.data)
+  return request(() =>
+    salesmsgClient.post(
+      `/contacts/note/${contactId}/create`,
+      null,
+      { params: { text } }
+    )
   );
 }
 
-export async function findMember(params: {
-  name?: string;
-  email?: string;
-  phone?: string;
-}) {
-  const { phone } = params;
+/* ---------------- TAGS ---------------- */
 
-  // 1. Primary lookup (most reliable)
-  if (phone) {
-    const res = await salesmsgClient.get("/contacts/search", {
-      params: { phone }
-    });
-
-    return res.data;
-  }
-
-  // 2. If API supports email/name search in future, plug here
-  // (kept intentionally API-pure; no MCP logic here)
-
-  throw new Error(
-    "Salesmsg findMember currently requires at least a phone number"
+export async function addTag(
+  contactId: string,
+  tag: string
+) {
+  return request(() =>
+    salesmsgClient.post(
+      `/tags/contact/${contactId}/${encodeURIComponent(tag)}`
+    )
   );
 }
 
-/* ---------------- Tags ---------------- */
-
-export async function addTag(contactId: string, tag: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post(`/contacts/${contactId}/tags`, { tag })
-      .then(r => r.data)
+export async function removeTag(
+  contactId: string,
+  tag: string
+) {
+  return request(() =>
+    salesmsgClient.delete(
+      `/tags/contact/${contactId}/${encodeURIComponent(tag)}`
+    )
   );
 }
 
-export async function removeTag(contactId: string, tag: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .delete(
-        `/contacts/${contactId}/tags/${encodeURIComponent(tag)}`
-      )
-      .then(r => r.data)
+export async function getContactsByTag(
+  tag: string,
+  page = 1,
+  limit = 20,
+  search?: string
+) {
+  return request(() =>
+    salesmsgClient.get(`/contacts/tags/${tag}`, {
+      params: { page, limit, search }
+    })
   );
 }
 
-/* ---------------- Notes ---------------- */
+/* ---------------- OPT OUT ---------------- */
 
-export async function createNote(contactId: string, note: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post(`/contacts/${contactId}/notes`, { note })
-      .then(r => r.data)
+export async function optOutContact(contactId: string) {
+  return request(() =>
+    salesmsgClient.post(`/contacts/opt-out/${contactId}`)
   );
 }
 
-/* ---------------- Utilities ---------------- */
+/* ---------------- LOOKUP ---------------- */
 
 export async function phoneLookup(phone: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .get("/lookup", { params: { phone } })
-      .then(r => r.data)
+  return request(() =>
+    salesmsgClient.get("/contacts", {
+      params: { number: phone }
+    })
   );
 }
 
-export async function optOutContact(phone: string) {
-  return smsRequest(() =>
-    salesmsgClient
-      .post("/opt-out", { phoneNumber: phone })
-      .then(r => r.data)
-  );
-}
-
-/* ---------------- Generic ---------------- */
+/* ---------------- GENERIC ---------------- */
 
 export async function apiRequest(
   method: string,
   endpoint: string,
-  data?: unknown
+  data?: any
 ) {
-  return smsRequest(() =>
-    salesmsgClient
-      .request({ method, url: endpoint, data })
-      .then(r => r.data)
+  return request(() =>
+    salesmsgClient.request({
+      method,
+      url: endpoint,
+      data
+    })
+  );
+}
+
+/* ---------------- MEMEBR ---------------- */
+
+export async function findMember({
+  teamId,
+  term,
+  assigned,
+  limit,
+  offset
+}: {
+  teamId: string;
+  term: string;
+  assigned?: number;
+  limit?: number;
+  offset?: number;
+}) {
+  return request(() =>
+    salesmsgClient.get(`/teams/${teamId}/members/search`, {
+      params: {
+        term,
+        assigned,
+        limit,
+        offset
+      }
+    })
   );
 }

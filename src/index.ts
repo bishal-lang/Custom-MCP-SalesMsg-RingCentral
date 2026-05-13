@@ -8,6 +8,8 @@ import {
 
 import { allTools } from "./tools/index.js";
 import { createTextResponse } from "./utils/response.js";
+import { config } from "./config/index.js";
+
 
 /* ---------------- Tool Map ---------------- */
 

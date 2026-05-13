@@ -13,6 +13,6 @@ export const createVideoMeetingTool: MCPTool = {
     additionalProperties: false
   },
   handler: async (args) => {
-    return createVideoMeeting(args.topic);
+    return createVideoMeeting(args.accountId,args.extensionId ,args.topic);
   }
 };

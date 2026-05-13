@@ -1,5 +1,5 @@
 import type { MCPTool } from "../../types/mcp.js";
-import { findContact } from "../../services/salesmsg.services.js";
+import { findContacts } from "../../services/salesmsg.services.js";
 
 export const findContactTool: MCPTool = {
   name: "salesmsg_find_contact",
@@ -13,6 +13,6 @@ export const findContactTool: MCPTool = {
     additionalProperties: false
   },
   handler: async (args) => {
-    return findContact(args.phone);
+    return findContacts(args.phone);
   }
 };
